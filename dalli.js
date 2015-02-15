@@ -40,6 +40,7 @@ $(document).ready(function(){
     var hasActiveChild = $(targetChild).parent().parent().children().children().hasClass('active');
     
     //Recursive control flow to retract children branches before parent branches.
+    //Need to add appropriate lags so that parent only starts animating once child animation is complete.
     if(hasActiveChild){
       var activeChildId = $(targetChild).parent().parent().children().children('.active').attr('id');
       var childDetails = parseId(activeChildId)
