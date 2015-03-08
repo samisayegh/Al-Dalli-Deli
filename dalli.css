@@ -205,6 +205,10 @@ section {
   height: 100px;
 }
 
+.active {
+	background-color: blue;
+}
+
 /* Links
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 a {

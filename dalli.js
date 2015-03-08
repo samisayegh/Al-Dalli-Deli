@@ -7,33 +7,36 @@ $(document).ready(function(){
   //General click function for nodes
   $('.node').click(function(){
     $(this).addClass('active');
-    //Check for active tree branches, and play retracting animation before forming a new branch.
-    console.log('I am this: ' + this);
-    checkSiblings(this);
     //Parse id of new branch in preparation for animation
     var nodeId = this.id;
     var details = parseId(nodeId);
-    branchOutAnimation("#l"+details[0],"#w"+details[1],".v"+details[1]);
+    
+    //Check for active tree branches and retract them before forming a new branch.
+    //Grow is the callback to extend branch once animation is complete
+    checkSiblings(this, grow(details));
+    
+    
+    
   });
   
   //Checking for active sibling branch
-  function checkSiblings(clickedNode){
+  function checkSiblings(clickedNode, growCB){
     var hasActiveSibling = $(clickedNode).parent().siblings().children().hasClass('active');
-    console.log(hasActiveSibling);
+
     if(hasActiveSibling){
       var activeSiblingId = $(clickedNode).parent().siblings().children('.active').attr('id');
-      console.log(activeSiblingId);
-      checkChildren(activeSiblingId);
       var details = parseId(activeSiblingId);
-      retractAnimation("#l"+details[0],"#w"+details[1],".v"+details[1]);
-      //Remove 'active' class once retract animation happens.
-      $('#'+activeSiblingId).removeClass('active');
+      //Check if active sibling has active children
+      checkChildren(activeSiblingId, retractSibling(details,activeSiblingId), growCB);
+    }
+    else {
+      growCB;
     }
   }
   //Check if an active node has active child
-  function checkChildren(id){
+  function checkChildren(id, retractSiblingCB, growCB){
     var details = parseId(id);
-    details[1] = parseInt(details[1])+1; //adding 1 to treeX targets children nodes.
+    details[1] = parseInt(details[1])+1; //adding 1 to treeLevel targets children nodes.
     details[0] = details[1]+ 'a'; //updating coordinate at details[0] to reflect the new level. Default column target set to 'a'.
     var targetChild = "#n"+ details[0];
     console.log("target child candidate: " + targetChild);
@@ -46,18 +49,30 @@ $(document).ready(function(){
       var childDetails = parseId(activeChildId)
       retractAnimation("#l"+childDetails[0],"#w"+childDetails[1],".v"+childDetails[1]);
       $(activeChildId).removeClass('active');
+      setTimeout(retractSiblingCB, 1150);
+      setTimeout(growCB, 2300);
     }
     else{
-      return;
+      retractSiblingCB;
+      setTimeout(growCB, 1150);
     }
   }
-  
+  function grow(details){
+    branchOutAnimation("#l"+details[0],"#w"+details[1],".v"+details[1]);
+  }
+
+  function retractSibling(details, activeSiblingId) {
+    retractAnimation("#l"+details[0],"#w"+details[1],".v"+details[1]);
+    //Remove 'active' class once retract animation happens.
+    $('#'+activeSiblingId).removeClass('active');
+  }
+        
   function parseId(id){
     var treeCoordinate = id.substring(1,3); //gets exact coordinate of the node: eg. 2c
-    var treeX = id.substring(1,2); //gets only the level or row of the node in the tree: eg. 2
-    return [treeCoordinate,treeX];
+    var treeLevel = id.substring(1,2); //gets only the level or row of the node in the tree: eg. 2
+    return [treeCoordinate,treeLevel];
   }
-  //Branching Out animation
+  //Branching Out animation occurs over 1150 ms
   function branchOutAnimation (linker, wrapper, vline){
     $(linker).animate({height:"100%"}, 350);
     setTimeout(function(){$(wrapper).animate({"margin-left": "0", "width": "100%"}, 500);}, 350);
@@ -67,7 +82,7 @@ $(document).ready(function(){
     $(vline).addClass('active');
   }
   
-  //Retracting animation
+  //Retracting animation occurs over 1150 ms
   function retractAnimation(linker, wrapper, vline){
     $(vline).animate({height:"0%"}, 350);
     setTimeout(function(){$(wrapper).animate({"margin-left": "37%", "width": "0"}, 500);}, 350);
