@@ -10,13 +10,10 @@ $(document).ready(function(){
     //Parse id of new branch in preparation for animation
     var nodeId = this.id;
     var details = parseId(nodeId);
-    
+
     //Check for active tree branches and retract them before forming a new branch.
     //Grow is the callback to extend branch once animation is complete
-    checkSiblings(this, grow(details));
-    
-    
-    
+    checkSiblings(this, grow(details));  
   });
   
   //Checking for active sibling branch
@@ -26,8 +23,9 @@ $(document).ready(function(){
     if(hasActiveSibling){
       var activeSiblingId = $(clickedNode).parent().siblings().children('.active').attr('id');
       var details = parseId(activeSiblingId);
+      var retractSiblingCB = retractSibling(details,activeSiblingId);
       //Check if active sibling has active children
-      checkChildren(activeSiblingId, retractSibling(details,activeSiblingId), growCB);
+      checkChildren(activeSiblingId, retractSiblingCB, growCB);
     }
     else {
       growCB;
@@ -39,16 +37,17 @@ $(document).ready(function(){
     details[1] = parseInt(details[1])+1; //adding 1 to treeLevel targets children nodes.
     details[0] = details[1]+ 'a'; //updating coordinate at details[0] to reflect the new level. Default column target set to 'a'.
     var targetChild = "#n"+ details[0];
-    console.log("target child candidate: " + targetChild);
     var hasActiveChild = $(targetChild).parent().parent().children().children().hasClass('active');
     
     //Recursive control flow to retract children branches before parent branches.
     //Need to add appropriate lags so that parent only starts animating once child animation is complete.
     if(hasActiveChild){
       var activeChildId = $(targetChild).parent().parent().children().children('.active').attr('id');
-      var childDetails = parseId(activeChildId)
+      console.log("I am the active child ID: " + activeChildId);
+      var childDetails = parseId(activeChildId);
+      $("#"+activeChildId).removeClass('active');
+
       retractAnimation("#l"+childDetails[0],"#w"+childDetails[1],".v"+childDetails[1]);
-      $(activeChildId).removeClass('active');
       setTimeout(retractSiblingCB, 1150);
       setTimeout(growCB, 2300);
     }
@@ -57,14 +56,17 @@ $(document).ready(function(){
       setTimeout(growCB, 1150);
     }
   }
+
   function grow(details){
     branchOutAnimation("#l"+details[0],"#w"+details[1],".v"+details[1]);
   }
 
   function retractSibling(details, activeSiblingId) {
-    retractAnimation("#l"+details[0],"#w"+details[1],".v"+details[1]);
-    //Remove 'active' class once retract animation happens.
+    //Remove 'active' class just before retract animation happens.
     $('#'+activeSiblingId).removeClass('active');
+
+    retractAnimation("#l"+details[0],"#w"+details[1],".v"+details[1]);
+    
   }
         
   function parseId(id){
@@ -74,21 +76,28 @@ $(document).ready(function(){
   }
   //Branching Out animation occurs over 1150 ms
   function branchOutAnimation (linker, wrapper, vline){
-    $(linker).animate({height:"100%"}, 350);
-    setTimeout(function(){$(wrapper).animate({"margin-left": "0", "width": "100%"}, 500);}, 350);
-    setTimeout(function(){$(vline).animate({height:"100%"}, 300);}, 850);
     $(linker).addClass('active');
     $(wrapper).addClass('active');
     $(vline).addClass('active');
+
+    $(linker).animate({height:"100%"}, 350);
+    setTimeout(function(){$(wrapper).animate({"margin-left": "0", "width": "100%"}, 500);}, 350);
+    setTimeout(function(){$(vline).animate({height:"100%"}, 300);}, 850);
   }
   
   //Retracting animation occurs over 1150 ms
   function retractAnimation(linker, wrapper, vline){
-    $(vline).animate({height:"0%"}, 350);
-    setTimeout(function(){$(wrapper).animate({"margin-left": "37%", "width": "0"}, 500);}, 350);
-    setTimeout(function(){$(linker).animate({height:"0"}, 300);}, 850);
     $(linker).removeClass('active');
     $(wrapper).removeClass('active');
     $(vline).removeClass('active');
+
+    $(vline).animate({height:"0%"}, 350);
+    setTimeout(function(){$(wrapper).animate({"margin-left": "37%", "width": "0"}, 500);}, 350);
+    setTimeout(function(){$(linker).animate({height:"0"}, 300);}, 850);
+  }
+
+  function makeFunction(cb){
+    var func = new Function(cb);
+    return func;
   }
 });
