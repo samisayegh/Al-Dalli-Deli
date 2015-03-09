@@ -13,7 +13,7 @@ $(document).ready(function(){
 
     //Check for active tree branches and retract them before forming a new branch.
     //Grow is the callback to extend branch once animation is complete
-    checkSiblings(this, grow(details));  
+    checkSiblings(this, details);  
   });
   
   //Checking for active sibling branch
@@ -23,16 +23,16 @@ $(document).ready(function(){
     if(hasActiveSibling){
       var activeSiblingId = $(clickedNode).parent().siblings().children('.active').attr('id');
       var details = parseId(activeSiblingId);
-      var retractSiblingCB = retractSibling(details,activeSiblingId);
       //Check if active sibling has active children
-      checkChildren(activeSiblingId, retractSiblingCB, growCB);
+      checkChildren(activeSiblingId, details, growCB);
     }
     else {
-      growCB;
+      grow(growCB);
     }
   }
   //Check if an active node has active child
-  function checkChildren(id, retractSiblingCB, growCB){
+  function checkChildren(id, siblingCB, growCB){
+    //Redundant repition of code to make it more readable
     var details = parseId(id);
     details[1] = parseInt(details[1])+1; //adding 1 to treeLevel targets children nodes.
     details[0] = details[1]+ 'a'; //updating coordinate at details[0] to reflect the new level. Default column target set to 'a'.
@@ -48,12 +48,12 @@ $(document).ready(function(){
       $("#"+activeChildId).removeClass('active');
 
       retractAnimation("#l"+childDetails[0],"#w"+childDetails[1],".v"+childDetails[1]);
-      setTimeout(retractSiblingCB, 1150);
-      setTimeout(growCB, 2300);
+      setTimeout(function(){retractSibling(siblingCB);}, 1150);
+      setTimeout(function(){grow(growCB);}, 2300);
     }
     else{
-      retractSiblingCB;
-      setTimeout(growCB, 1150);
+      retractSibling(siblingCB);
+      setTimeout(function(){grow(growCB);}, 1150);
     }
   }
 
@@ -61,12 +61,11 @@ $(document).ready(function(){
     branchOutAnimation("#l"+details[0],"#w"+details[1],".v"+details[1]);
   }
 
-  function retractSibling(details, activeSiblingId) {
-    //Remove 'active' class just before retract animation happens.
-    $('#'+activeSiblingId).removeClass('active');
-
+  function retractSibling(details) {
     retractAnimation("#l"+details[0],"#w"+details[1],".v"+details[1]);
     
+    //Remove 'active' class after retract animation happens.
+    $('#n'+details[0]).removeClass('active');
   }
         
   function parseId(id){
@@ -94,10 +93,5 @@ $(document).ready(function(){
     $(vline).animate({height:"0%"}, 350);
     setTimeout(function(){$(wrapper).animate({"margin-left": "37%", "width": "0"}, 500);}, 350);
     setTimeout(function(){$(linker).animate({height:"0"}, 300);}, 850);
-  }
-
-  function makeFunction(cb){
-    var func = new Function(cb);
-    return func;
   }
 });
