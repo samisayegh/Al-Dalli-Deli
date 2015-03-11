@@ -2,7 +2,18 @@ $(document).ready(function(){
   //Intial page rendering instructions
   $('.vline').height(0);
   
-  
+  //Percentages for animating the wrapper bar appropriately, beginning from the centre of the vline that extends to it.
+  var margins = {
+    a:'6.55%',
+    b:'23.8%',
+    c:'41.17%',
+    d:'58.55%',
+    e:'75.8%',
+    f:'93.17%',
+    //i and j are for the master nodes position at two and seven columns respectively.
+    i: '36.88%',
+    j: '80.2%'
+  };
   
   //General click function for nodes
   $('.node').click(function(){
@@ -75,6 +86,15 @@ $(document).ready(function(){
   }
   //Branching Out animation occurs over 1150 ms
   function branchOutAnimation (linker, wrapper, vline){
+    //Check if wrapper is already active or not, and adjust margin if latter.
+    var test = $(wrapper).css('margin-left');
+    console.log(test);
+    if ($(wrapper).css('margin-left') === '0px') {
+      var treeCol = linker.substring(3,4);
+      var wrapperPosition = margins[treeCol];
+      $(wrapper).css({"margin-left":wrapperPosition});
+    }
+
     $(linker).addClass('active');
     $(wrapper).addClass('active');
     $(vline).addClass('active');
@@ -90,8 +110,11 @@ $(document).ready(function(){
     $(wrapper).removeClass('active');
     $(vline).removeClass('active');
 
+    var treeCol = linker.substring(3,4);
+    var wrapperPosition = margins[treeCol];
+
     $(vline).animate({height:"0%"}, 350);
-    setTimeout(function(){$(wrapper).animate({"margin-left": "37%", "width": "0"}, 500);}, 350);
+    setTimeout(function(){$(wrapper).animate({"margin-left":wrapperPosition, "width": "0"}, 500);}, 350);
     setTimeout(function(){$(linker).animate({height:"0"}, 300);}, 850);
   }
 });
