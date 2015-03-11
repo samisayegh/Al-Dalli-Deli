@@ -87,9 +87,7 @@ $(document).ready(function(){
   //Branching Out animation occurs over 1150 ms
   function branchOutAnimation (linker, wrapper, vline){
     //Check if wrapper is already active or not, and adjust margin if latter.
-    var test = $(wrapper).css('margin-left');
-    console.log(test);
-    if ($(wrapper).css('margin-left') === '0px') {
+    if ($(wrapper).hasClass('active') === false) {
       var treeCol = linker.substring(3,4);
       var wrapperPosition = margins[treeCol];
       $(wrapper).css({"margin-left":wrapperPosition});
