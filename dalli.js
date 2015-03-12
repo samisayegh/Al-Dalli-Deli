@@ -15,7 +15,7 @@ $(document).ready(function(){
     j: '80.2%'
   };
   
-  //General click function for nodes
+  //General click function for nodes that are not already active.
   $('.node').click(function(){
     $(this).addClass('active');
     //Parse id of new branch in preparation for animation
@@ -116,3 +116,8 @@ $(document).ready(function(){
     setTimeout(function(){$(linker).animate({height:"0"}, 300);}, 850);
   }
 });
+
+//Off sync happens when clicking too clickly. Need to deactive click function until all animation completes.
+//Could add callback to grow function.
+
+//Level 2 nodes currently delay the animation play. Look into why.
