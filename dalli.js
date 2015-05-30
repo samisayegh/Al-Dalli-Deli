@@ -1,7 +1,10 @@
 $(document).ready(function(){
   //Intial page rendering instructions
   $('.vline').height(0);
-  
+
+  //Variable for controlling the delay in sequential animation steps.
+  var animationLength = 1000;
+
   //Percentages for animating the wrapper bar appropriately, beginning from the centre of the vline that extends to it.
   var margins = {
     a:'6.55%',
@@ -10,7 +13,7 @@ $(document).ready(function(){
     d:'58.55%',
     e:'75.8%',
     f:'93.17%',
-    //i and j are for the master nodes position at two and seven columns respectively.
+    //i and j are for the master nodes position at columns two and seven respectively.
     i: '36.88%',
     j: '80.2%'
   };
@@ -23,26 +26,26 @@ $(document).ready(function(){
     var details = parseId(nodeId);
 
     //Check for active tree branches and retract them before forming a new branch.
-    //Grow is the callback to extend branch once animation is complete
+    //extend is the callback to extend branch once animation is complete
     checkSiblings(this, details);  
   });
   
   //Checking for active sibling branch
-  function checkSiblings(clickedNode, growCB){
+  function checkSiblings(clickedNode, extendCB){
     var hasActiveSibling = $(clickedNode).parent().siblings().children().hasClass('active');
 
     if(hasActiveSibling){
       var activeSiblingId = $(clickedNode).parent().siblings().children('.active').attr('id');
       var details = parseId(activeSiblingId);
       //Check if active sibling has active children
-      checkChildren(activeSiblingId, details, growCB);
+      checkChildren(activeSiblingId, details, extendCB);
     }
     else {
-      grow(growCB);
+      extend(extendCB);
     }
   }
   //Check if an active node has active child
-  function checkChildren(id, siblingCB, growCB){
+  function checkChildren(id, siblingCB, extendCB){
     //Redundant repition of code to make it more readable
     var details = parseId(id);
     details[1] = parseInt(details[1])+1; //adding 1 to treeLevel targets children nodes.
@@ -59,16 +62,16 @@ $(document).ready(function(){
       $("#"+activeChildId).removeClass('active');
 
       retractAnimation("#l"+childDetails[0],"#w"+childDetails[1],".v"+childDetails[1]);
-      setTimeout(function(){retractSibling(siblingCB);}, 1150);
-      setTimeout(function(){grow(growCB);}, 2300);
+      setTimeout(function(){retractSibling(siblingCB);}, animationLength);
+      setTimeout(function(){extend(extendCB);}, animationLength*2);
     }
     else{
       retractSibling(siblingCB);
-      setTimeout(function(){grow(growCB);}, 1150);
+      setTimeout(function(){extend(extendCB);}, animationLength);
     }
   }
 
-  function grow(details){
+  function extend(details){
     branchOutAnimation("#l"+details[0],"#w"+details[1],".v"+details[1]);
   }
 
@@ -84,25 +87,28 @@ $(document).ready(function(){
     var treeLevel = id.substring(1,2); //gets only the level or row of the node in the tree: eg. 2
     return [treeCoordinate,treeLevel];
   }
-  //Branching Out animation occurs over 1150 ms
+  //Branching Out animation occurs over 1000 ms
   function branchOutAnimation (linker, wrapper, vline){
-    //Check if wrapper is already active or not, and adjust margin if latter.
+
     if ($(wrapper).hasClass('active') === false) {
+      
+      $(linker).addClass('active');
+      $(wrapper).addClass('active');
+      $(vline).addClass('active');
+
+      //Check if wrapper is already active or not, and adjust margin if latter.
       var treeCol = linker.substring(3,4);
       var wrapperPosition = margins[treeCol];
       $(wrapper).css({"margin-left":wrapperPosition});
-    }
 
-    $(linker).addClass('active');
-    $(wrapper).addClass('active');
-    $(vline).addClass('active');
-
-    $(linker).animate({height:"100%"}, 350);
-    setTimeout(function(){$(wrapper).animate({"margin-left": "0", "width": "100%"}, 500);}, 350);
-    setTimeout(function(){$(vline).animate({height:"100%"}, 300);}, 850);
+      //Animation sequence
+      $(linker).animate({height:"100%"}, 300);
+      setTimeout(function(){$(wrapper).animate({"margin-left": "0", "width": "100%"}, 450);}, 300);
+      setTimeout(function(){$(vline).animate({height:"100%"}, 250);}, 750);
+    } 
   }
   
-  //Retracting animation occurs over 1150 ms
+  //Retracting animation occurs over 1000 ms
   function retractAnimation(linker, wrapper, vline){
     $(linker).removeClass('active');
     $(wrapper).removeClass('active');
@@ -111,13 +117,13 @@ $(document).ready(function(){
     var treeCol = linker.substring(3,4);
     var wrapperPosition = margins[treeCol];
 
-    $(vline).animate({height:"0%"}, 350);
-    setTimeout(function(){$(wrapper).animate({"margin-left":wrapperPosition, "width": "0"}, 500);}, 350);
-    setTimeout(function(){$(linker).animate({height:"0"}, 300);}, 850);
+    $(vline).animate({height:"0%"}, 300);
+    setTimeout(function(){$(wrapper).animate({"margin-left":wrapperPosition, "width": "0"}, 450);}, 300);
+    setTimeout(function(){$(linker).animate({height:"0"}, 250);}, 750);
   }
 });
 
-//Off sync happens when clicking too clickly. Need to deactive click function until all animation completes.
-//Could add callback to grow function.
+//1- Off sync happens when clicking too quickly. Need to deactive click function until all animation completes.
+//Could add callback to extend function.
 
-//Level 2 nodes currently delay the animation play. Look into why.
+//2- When level 2 nodes are active, there is a delay on animation start.
