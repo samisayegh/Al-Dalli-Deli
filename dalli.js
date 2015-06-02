@@ -18,9 +18,15 @@ $(document).ready(function(){
     j: '80.2%'
   };
   
+
   //General click function for nodes that are not already active.
   $('.node').click(function(){
+    //Deactives node click function to prevent a new animation from starting before the current one is complete.
+    $('.node').not('.terminal').css("pointer-events", "none");
+    setTimeout(function(){$('.node').css("pointer-events", "auto");},750+animationLength);
+    
     $(this).addClass('active');
+    
     //Parse id of new branch in preparation for animation
     var nodeId = this.id;
     var details = parseId(nodeId);
@@ -135,5 +141,5 @@ $(document).ready(function(){
   }
 });
 
-//1- Off sync happens when clicking too quickly. Need to deactive click function until all animation completes.
-//Could add callback to extend function.
+//Bugs
+//Tier 2 node remains active if clicking a different tier 0 node.
