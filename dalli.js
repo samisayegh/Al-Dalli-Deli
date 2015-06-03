@@ -25,40 +25,39 @@ $(document).ready(function(){
     $('.node').not('.terminal').css("pointer-events", "none");
     setTimeout(function(){$('.node').css("pointer-events", "auto");},750+animationLength);
     
-    $(this).addClass('active');
-    
     //Parse id of new branch in preparation for animation
+    $(this).addClass('active');
     var nodeId = this.id;
-    var details = parseId(nodeId);
+    var extendDetails = parseId(nodeId);
 
     //Check for active tree branches and retract them before forming a new branch.
     //extend is the callback to extend branch once animation is complete
 
-    checkSiblings(this, details);
+    checkSiblings(this, extendDetails);
   });
 
   //Checking for active sibling branch
-  function checkSiblings(clickedNode, extendCB){
+  function checkSiblings(clickedNode, extendDetails){
     var hasActiveSibling = $(clickedNode).parent().siblings().children().hasClass('active');
 
     if(hasActiveSibling){
       var activeSiblingId = $(clickedNode).parent().siblings().children('.active').attr('id');
-      var details = parseId(activeSiblingId);
+      var siblingDetails = parseId(activeSiblingId);
 
       //Check if active sibling has active children
-      checkChildren(activeSiblingId, details, extendCB);
+      checkChildren(activeSiblingId, siblingDetails, extendDetails);
     }
     else {
-      extend(extendCB);
+      extend(extendDetails);
     }
   }
   //Check if an active node has active child
-  function checkChildren(id, siblingCB, extendCB){
+  function checkChildren(activeSiblingId, parentDetails, extendDetails){
     //Redundant repition of code to make it more readable
-    var details = parseId(id);
-    details[1] = parseInt(details[1])+1; //adding 1 to treeLevel targets children nodes.
-    details[0] = details[1]+ 'a'; //updating coordinate at details[0] to reflect the new level. Default column target set to 'a'.
-    var targetChild = "#n"+ details[0];
+    var targetDetails = parseId(activeSiblingId);
+    targetDetails[1] = parseInt(targetDetails[1])+1; //adding 1 to treeLevel targets children nodes.
+    targetDetails[0] = targetDetails[1]+ 'a'; //updating coordinate at targetDetails[0] to reflect the new level. Default column target set to 'a'.
+    var targetChild = "#n"+ targetDetails[0];
     var hasActiveChild = $(targetChild).parent().parent().children().children().hasClass('active');
     
     //Recursive control flow to retract children branches before parent branches.
@@ -71,19 +70,22 @@ $(document).ready(function(){
 
       //Terminal nodes have no children, so no need to retract on childDetails. 'If' statement reduces the lag.
       if(isTerminal){
-        retractSibling(siblingCB);
-        setTimeout(function(){extend(extendCB);}, animationLength);
+        retract(parentDetails);
+        setTimeout(function(){extend(extendDetails);}, animationLength);
       }
+      // else if (true) {
+      //   checkChildren(activeChildId, childDetails, extendDetails)
+      // };
       else{
-        retractAnimation("#l"+childDetails[0],"#w"+childDetails[1],".v"+childDetails[1]);
-        setTimeout(function(){retractSibling(siblingCB);}, animationLength);
-        setTimeout(function(){extend(extendCB);}, animationLength*2);
+        retract(childDetails);
+        setTimeout(function(){retract(parentDetails);}, animationLength);
+        setTimeout(function(){extend(extendDetails);}, animationLength*2);
       }
     }
 
     else{
-      retractSibling(siblingCB);
-      setTimeout(function(){extend(extendCB);}, animationLength);
+      retract(parentDetails);
+      setTimeout(function(){extend(extendDetails);}, animationLength);
     }
   }
 
@@ -97,7 +99,7 @@ $(document).ready(function(){
     return [treeCoordinate,treeLevel];
     }
 
-  function retractSibling(details) {
+  function retract(details) {
     retractAnimation("#l"+details[0],"#w"+details[1],".v"+details[1]);
     
     //Remove 'active' class after retract animation happens.
