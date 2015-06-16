@@ -2,8 +2,11 @@ $(document).ready(function(){
   //Intial page rendering instructions
   $('.vline').height(0);
 
-  //Variable for controlling the delay in sequential animation steps.
+  //Retract animation duration (ms).
   var animationLength = 700;
+
+  //Tracks tree depth during recursive calls of checkChildren
+  var depth = 0;
 
   //Percentages for animating the wrapper bar appropriately, beginning from the centre of the vline that extends to it.
   var margins = {
@@ -18,12 +21,11 @@ $(document).ready(function(){
     j: '80.2%'
   };
   
-
   //General click function for nodes that are not already active.
   $('.node').click(function(){
     //Deactives node click function to prevent a new animation from starting before the current one is complete.
     $('.node').not('.terminal').css("pointer-events", "none");
-    setTimeout(function(){$('.node').css("pointer-events", "auto");},750+animationLength);
+    setTimeout(function(){$('.node').css("pointer-events", "auto");},750+(animationLength*depth));
     
     //Parse id of new branch in preparation for animation
     $(this).addClass('active');
@@ -32,7 +34,6 @@ $(document).ready(function(){
 
     //Check for active tree branches and retract them before forming a new branch.
     //extend is the callback to extend branch once animation is complete
-
     checkSiblings(this, extendDetails);
   });
 
@@ -46,46 +47,50 @@ $(document).ready(function(){
 
       //Check if active sibling has active children
       checkChildren(activeSiblingId, siblingDetails, extendDetails);
+      setTimeout(function(){extend(extendDetails);}, animationLength*depth);
+      depth = 0;
     }
     else {
       extend(extendDetails);
     }
   }
   //Check if an active node has active child
-  function checkChildren(activeSiblingId, parentDetails, extendDetails){
-    //Redundant repition of code to make it more readable
-    var targetDetails = parseId(activeSiblingId);
+  function checkChildren(activeParentId, parentDetails, extendDetails){
+    //Sets target child
+    var targetDetails = parseId(activeParentId);
     targetDetails[1] = parseInt(targetDetails[1])+1; //adding 1 to treeLevel targets children nodes.
     targetDetails[0] = targetDetails[1]+ 'a'; //updating coordinate at targetDetails[0] to reflect the new level. Default column target set to 'a'.
     var targetChild = "#n"+ targetDetails[0];
     var hasActiveChild = $(targetChild).parent().parent().children().children().hasClass('active');
     
-    //Recursive control flow to retract children branches before parent branches.
-    //Need to add appropriate lags so that parent only starts animating once child animation is complete.
+    //Recursive flow to retract children branches before parent branches.
     if(hasActiveChild){
       var activeChildId = $(targetChild).parent().parent().children().children('.active').attr('id');
-      var isTerminal = $('#'+activeChildId).hasClass('terminal');
       var childDetails = parseId(activeChildId);
-      $("#"+activeChildId).removeClass('active');
+      var isTerminal = $('#'+activeChildId).hasClass('terminal');
 
-      //Terminal nodes have no children, so no need to retract on childDetails. 'If' statement reduces the lag.
+      //Terminal nodes have no children.
       if(isTerminal){
+        $("#"+activeChildId).removeClass('active');
         retract(parentDetails);
-        setTimeout(function(){extend(extendDetails);}, animationLength);
+        ++depth;
+        return;
       }
-      // else if (true) {
-      //   checkChildren(activeChildId, childDetails, extendDetails)
-      // };
+      //If active and not terminal, check children of the new node.
       else{
-        retract(childDetails);
-        setTimeout(function(){retract(parentDetails);}, animationLength);
-        setTimeout(function(){extend(extendDetails);}, animationLength*2);
+        checkChildren(activeChildId, childDetails, extendDetails);
+        setTimeout(function(){
+          retract(parentDetails);
+        }, animationLength*depth);
+        ++depth;
+        return;
       }
     }
-
+    //If no active children.
     else{
       retract(parentDetails);
-      setTimeout(function(){extend(extendDetails);}, animationLength);
+      ++depth;
+      return;
     }
   }
 
@@ -97,16 +102,13 @@ $(document).ready(function(){
     var treeCoordinate = id.substring(1,3); //gets exact coordinate of the node: eg. 2c
     var treeLevel = id.substring(1,2); //gets only the level or row of the node in the tree: eg. 2
     return [treeCoordinate,treeLevel];
-    }
+  }
 
   function retract(details) {
     retractAnimation("#l"+details[0],"#w"+details[1],".v"+details[1]);
-    
-    //Remove 'active' class after retract animation happens.
     $('#n'+details[0]).removeClass('active');
   }
-        
-  
+
   //Branching Out animation occurs over 1000 ms
   function branchOutAnimation (linker, wrapper, vline){
 
@@ -142,6 +144,3 @@ $(document).ready(function(){
     setTimeout(function(){$(linker).animate({height:"0"}, 150);}, 550);
   }
 });
-
-//Bugs
-//Tier 2 node remains active if clicking a different tier 0 node.
