@@ -21,11 +21,15 @@ $(document).ready(function(){
     j: '80.2%'
   };
   
+  //Terminal node click function to open photo/video pod.
+  $('.terminal').click(function(){
+    
+  });
+  
   //General click function for nodes that are not already active.
   $('.node').click(function(){
     //Deactives node click function to prevent a new animation from starting before the current one is complete.
     $('.node').not('.terminal').css("pointer-events", "none");
-    setTimeout(function(){$('.node').css("pointer-events", "auto");},750+(animationLength*depth));
     
     //Parse id of new branch in preparation for animation
     $(this).addClass('active');
@@ -48,12 +52,15 @@ $(document).ready(function(){
       //Check if active sibling has active children
       checkChildren(activeSiblingId, siblingDetails, extendDetails);
       setTimeout(function(){extend(extendDetails);}, animationLength*depth);
-      depth = 0;
     }
     else {
       extend(extendDetails);
     }
+    //Restore click function.
+    setTimeout(function(){$('.node').css("pointer-events", "auto");},1000+(animationLength*depth));
+    depth = 0;
   }
+  
   //Check if an active node has active child
   function checkChildren(activeParentId, parentDetails, extendDetails){
     //Sets target child
@@ -79,9 +86,7 @@ $(document).ready(function(){
       //If active and not terminal, check children of the new node.
       else{
         checkChildren(activeChildId, childDetails, extendDetails);
-        setTimeout(function(){
-          retract(parentDetails);
-        }, animationLength*depth);
+        setTimeout(function(){retract(parentDetails);}, animationLength*depth);
         ++depth;
         return;
       }
@@ -127,7 +132,7 @@ $(document).ready(function(){
       $(linker).animate({height:"100%"}, 300);
       setTimeout(function(){$(wrapper).animate({"margin-left": "0", "width": "100%"}, 450);}, 300);
       setTimeout(function(){$(vline).animate({height:"100%"}, 250);}, 750);
-    } 
+    }
   }
   
   //Retracting animation occurs over 700 ms
