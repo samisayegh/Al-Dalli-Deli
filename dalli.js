@@ -8,7 +8,7 @@ $(document).ready(function(){
   //Tracks tree depth during recursive calls of checkChildren
   var depth = 0;
 
-  //Percentages for animating the wrapper bar appropriately, beginning from the centre of the vline that extends to it. And
+  //Percentages for animating the wrapper bar appropriately, beginning from the centre of the vline that extends to it.
   var margins = {
     a:'6.55%',
     b:'23.8%',
