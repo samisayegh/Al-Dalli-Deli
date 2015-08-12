@@ -1,3 +1,7 @@
+//TODO: Add pods for displaying images.
+//TODO: Look into AJAX calls.
+//TODO: Add lightbox viewer.
+
 $(document).ready(function(){
   //Intial page rendering instructions
   $('.vline').height(0);
@@ -115,7 +119,7 @@ $(document).ready(function(){
   }
 
   //Branching Out animation occurs over 1000 ms
-  function branchOutAnimation (linker, wrapper, vline){
+  function branchOutAnimation(linker, wrapper, vline){
 
     if ($(wrapper).hasClass('active') === false) {
       
